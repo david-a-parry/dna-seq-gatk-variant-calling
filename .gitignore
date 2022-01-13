@@ -31,3 +31,6 @@ scripts/.snakemake*
 !.test/config.yaml
 !report
 !report/*.rst
+!cluster_config.yaml
+!cluster-qsub
+!cluster-qsub/*
