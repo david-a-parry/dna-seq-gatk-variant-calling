@@ -1,16 +1,43 @@
 from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 
-if (config["ref"].get("fasta_url") is None or
-        config["ref"].get("variation_url") is None):
+
+def local_or_urls_present():
+    if config["ref"].get("fasta_url") is None:
+        if config["ref"].get("fasta_local") is None:
+            return False
+    if config["ref"].get("variation_url") is None:
+        if config["ref"].get("variation_local") is None:
+            return False
+    return True
+
+
+if not local_or_urls_present():
     for x in ["species", "release", "build"]:
         if x not in config["ref"]:
             raise ValueError(
                     "You must specify species, release and build for " +
                     "retrieval of ensembl genome/variation data in " +
-                    "config/config.yaml or else provide values for fasta_url" +
-                    "and variation_url.")
+                    "config/config.yaml or else provide values for fasta_url/" +
+                    "fasta_local and variation_url/variation_local.")
 
-if config["ref"].get("fasta_url") is not None:
+if config["ref"].get("fasta_local") is not None:
+    rule get_genome_local:
+        input:
+            config["ref"]["fasta_local"]
+        output:
+            "resources/genome.fasta",
+        params:
+            genome_tmp="resources/genome_tmp.fa.gz"
+        log:
+            "logs/get-genome.log",
+        cache: True
+        run:
+            if config["ref"]["fasta_local"].endswith(".gz"):
+                shell("cp -v {input} {params.genome_tmp} 2> {log}")
+                shell("gzip -dc {params.genome_tmp} > {output} 2>> {log}")
+            else:
+                shell("cp -v {input} {output} 2> {log}")
+elif config["ref"].get("fasta_url") is not None:
     # genome will be retrieved from URL
     HTTP = HTTPRemoteProvider()
     rule get_genome_remote:
@@ -43,7 +70,7 @@ else:
             release=config["ref"]["release"],
         cache: True
         wrapper:
-            "0.74.0/bio/reference/ensembl-sequence"
+            "0.84.0/bio/reference/ensembl-sequence"
 
 
 checkpoint genome_faidx:
@@ -55,7 +82,7 @@ checkpoint genome_faidx:
         "logs/genome-faidx.log",
     cache: True
     wrapper:
-        "0.74.0/bio/samtools/faidx"
+        "0.84.0/bio/samtools/faidx"
 
 
 rule genome_dict:
@@ -72,7 +99,19 @@ rule genome_dict:
         "samtools dict {input} > {output} 2> {log} "
 
 
-if config["ref"].get("variation_url") is not None:
+if config["ref"].get("variation_local") is not None:
+    rule get_known_variation_local:
+        input:
+            vcf=config["ref"]["variation_local"],
+            fai="resources/genome.fasta.fai",
+        output:
+            "resources/variation.vcf.gz"
+        log:
+            "logs/get-known-variants.log",
+        cache: True
+        shell:
+            "cp -v {input.vcf} {output} 2> {log}"
+elif config["ref"].get("variation_url") is not None:
     HTTP = HTTPRemoteProvider()
     rule get_known_variation_remote:
         input:
@@ -101,12 +140,26 @@ else:
             type="all",
         cache: True
         wrapper:
-            "0.74.0/bio/reference/ensembl-variation"
+            "0.84.0/bio/reference/ensembl-variation"
+
+rule tabix_tmp_known_variants:
+    input:
+        "resources/variation.vcf.gz",
+    output:
+        "resources/variation.vcf.gz.tbi",
+    log:
+        "logs/tabix/variation_tmp.log",
+    params:
+        "-p vcf",
+    cache: True
+    wrapper:
+        "0.84.0/bio/tabix"
 
 
 rule remove_iupac_codes:
     input:
         "resources/variation.vcf.gz",
+        "resources/variation.vcf.gz.tbi",
     output:
         "resources/variation.noiupac.vcf.gz",
     log:
@@ -129,7 +182,7 @@ rule tabix_known_variants:
         "-p vcf",
     cache: True
     wrapper:
-        "0.74.0/bio/tabix"
+        "0.84.0/bio/tabix"
 
 
 rule bwa_index:
@@ -143,7 +196,7 @@ rule bwa_index:
         mem_mb=369000,
     cache: True
     wrapper:
-        "0.74.0/bio/bwa/index"
+        "0.84.0/bio/bwa/index"
 
 
 rule get_vep_cache:
@@ -156,7 +209,7 @@ rule get_vep_cache:
     log:
         "logs/vep/cache.log",
     wrapper:
-        "0.74.0/bio/vep/cache"
+        "0.84.0/bio/vep/cache"
 
 
 rule get_vep_plugins:
@@ -167,4 +220,4 @@ rule get_vep_plugins:
     params:
         release=config["ref"]["release"],
     wrapper:
-        "0.74.0/bio/vep/plugins"
+        "0.84.0/bio/vep/plugins"
