@@ -1,16 +1,49 @@
-rule get_genome:
-    output:
-        "resources/genome.fasta",
-    log:
-        "logs/get-genome.log",
-    params:
-        species=config["ref"]["species"],
-        datatype="dna",
-        build=config["ref"]["build"],
-        release=config["ref"]["release"],
-    cache: True
-    wrapper:
-        "0.74.0/bio/reference/ensembl-sequence"
+from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
+
+if (config["ref"].get("fasta_url") is None or
+        config["ref"].get("variation_url") is None):
+    for x in ["species", "release", "build"]:
+        if x not in config["ref"]:
+            raise ValueError(
+                    "You must specify species, release and build for " +
+                    "retrieval of ensembl genome/variation data in " +
+                    "config/config.yaml or else provide values for fasta_url" +
+                    "and variation_url.")
+
+if config["ref"].get("fasta_url") is not None:
+    # genome will be retrieved from URL
+    HTTP = HTTPRemoteProvider()
+    rule get_genome_remote:
+        input:
+            HTTP.remote(config["ref"]["fasta_url"])
+        output:
+            "resources/genome.fasta",
+        params:
+            genome_tmp="resources/genome_tmp.fa.gz"
+        log:
+            "logs/get-genome.log",
+        cache: True
+        run:
+            if config["ref"]["fasta_url"].endswith(".gz"):
+                shell("mv -v {input} {params.genome_tmp} 2> {log}")
+                shell("gzip -dc {params.genome_tmp} > {output} 2>> {log}")
+            else:
+                shell("mv -v {input} {output} 2> {log}")
+else:
+    # genome will be retrieved from ensembl using species/version
+    rule get_genome_ensembl:
+        output:
+            "resources/genome.fasta",
+        log:
+            "logs/get-genome.log",
+        params:
+            species=config["ref"]["species"],
+            datatype="dna",
+            build=config["ref"]["build"],
+            release=config["ref"]["release"],
+        cache: True
+        wrapper:
+            "0.74.0/bio/reference/ensembl-sequence"
 
 
 checkpoint genome_faidx:
@@ -39,22 +72,36 @@ rule genome_dict:
         "samtools dict {input} > {output} 2> {log} "
 
 
-rule get_known_variation:
-    input:
-        # use fai to annotate contig lengths for GATK BQSR
-        fai="resources/genome.fasta.fai",
-    output:
-        vcf="resources/variation.vcf.gz",
-    log:
-        "logs/get-known-variants.log",
-    params:
-        species=config["ref"]["species"],
-        build=config["ref"]["build"],
-        release=config["ref"]["release"],
-        type="all",
-    cache: True
-    wrapper:
-        "0.74.0/bio/reference/ensembl-variation"
+if config["ref"].get("variation_url") is not None:
+    HTTP = HTTPRemoteProvider()
+    rule get_known_variation_remote:
+        input:
+            vcf=HTTP.remote(config["ref"]["variation_url"]),
+            fai="resources/genome.fasta.fai",
+        output:
+            "resources/variation.vcf.gz"
+        log:
+            "logs/get-known-variants.log",
+        cache: True
+        shell:
+            "mv -v {input.vcf} {output} 2> {log}"
+else:
+    rule get_known_variation_ensembl:
+        input:
+            # use fai to annotate contig lengths for GATK BQSR
+            fai="resources/genome.fasta.fai",
+        output:
+            vcf="resources/variation.vcf.gz",
+        log:
+            "logs/get-known-variants.log",
+        params:
+            species=config["ref"]["species"],
+            build=config["ref"]["build"],
+            release=config["ref"]["release"],
+            type="all",
+        cache: True
+        wrapper:
+            "0.74.0/bio/reference/ensembl-variation"
 
 
 rule remove_iupac_codes:

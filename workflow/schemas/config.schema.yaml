@@ -15,14 +15,37 @@ properties:
     properties:
       species:
         type: string
+        description:
+            Ensembl species name - required for downloading VEP cache and
+            optionally for downloading genome and variation data.
       build:
         type: string
+        description:
+            Ensembl genome build - required for downloading VEP cache and
+            optionally for downloading genome and variation data.
       release:
         type: integer
+        description:
+            Ensembl release number - required for downloading VEP cache and
+            optionally for downloading genome and variation data.
+      fasta_url:
+        type: string
+        description:
+            URL to reference genome fasta. If provided species/build/release
+            will be ignored and genome fasta will be downloaded from this URL
+            instead.
+      variation_url:
+        description:
+            URL to a bgzip compressed VCF of common variation. If provided
+            species/build/release will be ignored and variants will be
+            downloaded from this URL instead.
+        type: string
     required:
       - species
       - build
       - release
+
+      
 
   filtering:
     type: object
