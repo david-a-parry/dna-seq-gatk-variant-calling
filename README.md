@@ -1,3 +1,5 @@
+### _This is a fork of the workflow described below, modified to allow the user to specify their own reference genome and variant data._
+
 # Snakemake workflow: dna-seq-gatk-variant-calling
 
 [![DOI](https://zenodo.org/badge/139045164.svg)](https://zenodo.org/badge/latestdoi/139045164)
