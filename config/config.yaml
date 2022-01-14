@@ -10,6 +10,7 @@ ref:
   build: GRCh38
   fasta_url: ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/001/405/GCA_000001405.15_GRCh38/seqs_for_alignment_pipelines.ucsc_ids/GCA_000001405.15_GRCh38_no_alt_analysis_set.fna.gz
   variation_url: ftp.ncbi.nih.gov/snp/organisms/human_9606_b151_GRCh38p7/VCF/All_20180418.vcf.gz
+  fix_non_iupac: false
 
 filtering:
   # Set to true in order to apply machine learning based recalibration of
@@ -22,12 +23,40 @@ filtering:
       "QD < 2.0 || FS > 60.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -8.0"
     indels:
       "QD < 2.0 || FS > 200.0 || ReadPosRankSum < -20.0"
+  recal:
+    truth_sensitivity:
+      snvs: 99.5
+      indels: 95.0
+    annotations:
+      snvs:
+        ["QD", "FS", "MQ", "MQRankSum", "ReadPosRankSum", "SOR"]
+      indels:
+        ["QD", "FS", "MQRankSum", "ReadPosRankSum", "SOR"]
+    resources:
+      hapmap:
+        prior: 15.0
+        file: resources/hapmap_3.3.hg38.vcf.gz
+      omni:
+        prior: 12.0
+        file: resources/1000G_omni2.5.hg38.vcf.gz
+      g1k:
+        prior: 10.0
+        file: resources/1000G_phase1.snps.high_confidence.biallelic.hg38.vcf.gz
+      dbsnp:
+        prior: 2.0
+        file: resources/dbSNP151.hg38.vcf.gz
+      mills:
+        prior: 12.0
+        file: resources/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz
+      axiom:
+        prior: 10.0
+        file: resources/Axiom_Exome_Plus.genotypes.all_populations.poly.hg38.vcf.gz
 
 processing:
   remove-duplicates: true
   # Uncomment and point to a bed file with, e.g., captured regions if necessary,
   # see https://gatkforums.broadinstitute.org/gatk/discussion/4133/when-should-i-use-l-to-pass-in-a-list-of-intervals.
-  # restrict-regions: captured_regions.bed
+  # restrict-regions: targets.bed
   # If regions are restricted, uncomment this to enlarge them by the given value in order to include
   # flanking areas.
   # region-padding: 100
@@ -37,7 +66,9 @@ params:
     HaplotypeCaller: ""
     BaseRecalibrator: ""
     GenotypeGVCFs: ""
-    VariantRecalibrator: ""
+    VariantRecalibrator:
+      snvs: "-tranche 100.0 -tranche 99.95 -tranche 99.9  -tranche 99.5 -tranche 99.0 -tranche 95.0 -tranche 90.0"
+      indels: "--max-gaussians 4 -tranche 100.0 -tranche 99.95 -tranche 99.9  -tranche 99.5 -tranche 99.0 -tranche 95.0 -tranche 90.0"
   picard:
     MarkDuplicates: "REMOVE_DUPLICATES=true"
   trimmomatic:
@@ -61,4 +92,4 @@ params:
       # Plugin args can be passed as well, e.g. "LoFtool,path/to/custom/scores.txt".
       - LoFtool
     # extra command line arguments (e.g. --sift, see docs)
-    extra: ""
+    extra: "--everything --allele_number"
