@@ -15,3 +15,6 @@ trim_reads_pe:
   mem_gb: 16
 plot_stats:
   mem_gb: 16
+compose_regions:
+    mem_gb: 1
+    runtime: 60

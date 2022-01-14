@@ -5,10 +5,10 @@ if "restrict-regions" in config["processing"]:
             config["processing"]["restrict-regions"],
         output:
             "results/called/{contig}.regions.bed",
-        conda:
-            "../envs/bedops.yaml"
+        log:
+            "logs/bedops/extract_{contig}.log",
         shell:
-            "bedextract {wildcards.contig} {input} > {output}"
+            "grep -w '^{wildcards.contig}' {input} > {output} || true"
 
 
 rule call_variants:
@@ -16,8 +16,8 @@ rule call_variants:
         bam=get_sample_bams,
         ref="resources/genome.fasta",
         idx="resources/genome.dict",
-        known="resources/variation.noiupac.vcf.gz",
-        tbi="resources/variation.noiupac.vcf.gz.tbi",
+        known=get_variation_vcf(),
+        tbi=get_variation_vcf() + ".tbi",
         regions=(
             "results/called/{contig}.regions.bed"
             if config["processing"].get("restrict-regions")
@@ -30,7 +30,7 @@ rule call_variants:
     params:
         extra=get_call_variants_params,
     wrapper:
-        "0.59.0/bio/gatk/haplotypecaller"
+        "0.84.0/bio/gatk/haplotypecaller"
 
 
 rule combine_calls:
@@ -44,7 +44,7 @@ rule combine_calls:
     log:
         "logs/gatk/combinegvcfs.{contig}.log",
     wrapper:
-        "0.74.0/bio/gatk/combinegvcfs"
+        "0.84.0/bio/gatk/combinegvcfs"
 
 
 rule genotype_variants:
@@ -58,7 +58,7 @@ rule genotype_variants:
     log:
         "logs/gatk/genotypegvcfs.{contig}.log",
     wrapper:
-        "0.74.0/bio/gatk/genotypegvcfs"
+        "0.84.0/bio/gatk/genotypegvcfs"
 
 
 rule merge_variants:
@@ -71,4 +71,4 @@ rule merge_variants:
     log:
         "logs/picard/merge-genotyped.log",
     wrapper:
-        "0.74.0/bio/picard/mergevcfs"
+        "0.84.0/bio/picard/mergevcfs"

@@ -142,19 +142,6 @@ else:
         wrapper:
             "0.84.0/bio/reference/ensembl-variation"
 
-rule tabix_tmp_known_variants:
-    input:
-        "resources/variation.vcf.gz",
-    output:
-        "resources/variation.vcf.gz.tbi",
-    log:
-        "logs/tabix/variation_tmp.log",
-    params:
-        "-p vcf",
-    cache: True
-    wrapper:
-        "0.84.0/bio/tabix"
-
 
 rule remove_iupac_codes:
     input:
@@ -173,9 +160,9 @@ rule remove_iupac_codes:
 
 rule tabix_known_variants:
     input:
-        "resources/variation.noiupac.vcf.gz",
+        get_variation_vcf(),
     output:
-        "resources/variation.noiupac.vcf.gz.tbi",
+        get_variation_vcf() + ".tbi",
     log:
         "logs/tabix/variation.log",
     params:

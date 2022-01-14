@@ -128,11 +128,55 @@ def get_snpeff_reference():
     return "{}.{}".format(config["ref"]["build"], config["ref"]["snpeff_release"])
 
 
-def get_vartype_arg(wildcards):
-    return "--select-type-to-include {}".format(
-        "SNP" if wildcards.vartype == "snvs" else "INDEL"
-    )
+def get_select_vartype_arg(wildcards):
+    if wildcards.vartype == "snvs":
+        return "--select-type-to-include SNP " + "--select-type-to-include MNP"
+    return "--select-type-to-include INDEL " + "--select-type-to-include MIXED"
+
+
+def get_recal_mode(wildcards):
+    return "SNP" if wildcards.vartype == "snvs" else "INDEL"
 
 
 def get_filter(wildcards):
     return {"snv-hard-filter": config["filtering"]["hard"][wildcards.vartype]}
+
+
+def get_variation_vcf():
+    if config["ref"].get('fix_non_iupac'):
+        return "resources/variation.noiupac.vcf.gz"
+    return "resources/variation.vcf.gz"
+
+
+def get_vqsr_annotations(vartype):
+    return config["filtering"]["recal"]["annotations"][vartype]
+
+
+def get_vqsr_resources(vartype):
+    resource_defaults = {
+      "hapmap": {"known": False, "training": True, "truth": True, "prior": 15.0},
+      "omni": {"known": False, "training": True, "truth": False, "prior": 12.0},
+      "g1k": {"known": False, "training": True, "truth": False, "prior": 10.0},
+      "mills": {"known": False, "training": True, "truth": True, "prior": 12.0},
+      "axiom": {"known": False, "training": True, "truth": False, "prior": 10.0},
+      "dbsnp": {"known": True, "training": False, "truth": False, "prior": 2.0}
+    }
+    if vartype == "snvs":
+        datasets = [x for x in ["hapmap", "omni", "g1k", "dbsnp"] if x in
+                    config['filtering']['recal']['resources']]
+    else:
+        datasets = [x for x in ["mills", "axiom", "dbsnp"] if x in
+                    config['filtering']['recal']['resources']]
+    res = dict()
+    for x in datasets:
+        res[x] = resource_defaults[x]
+        if x in config['filtering']['recal']['resources']:
+            res[x]['prior'] = config['filtering']['recal']['resources'].get(
+                   'prior',
+                   resource_defaults[x]['prior'])
+    return res
+
+
+def get_vqsr_sensitivity(wildcards):
+    return "--truth-sensitivity-filter-level {}".format(
+          config['filtering']['recal']['truth_sensitivity'][wildcards.vartype])

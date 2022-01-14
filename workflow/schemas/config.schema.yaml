@@ -40,6 +40,22 @@ properties:
             species/build/release will be ignored and variants will be
             downloaded from this URL instead.
         type: string
+      fasta_local:
+        description:
+            Path to local copy of reference genome fasta.  If provided
+            species/build/release/fasta_url will be ignored and this file will
+            be used instead.
+        type: string
+      variation_local:
+        description:
+            Path to local copy of a bgzip compressed VCF of common variation.
+            If provided species/build/release/variation_url will be ignored and
+            this variant file will be used instead.
+        type: string
+      fix_non_iupac:
+        type: boolean
+        description:
+            If true, check and remove non IUPAC codes from variation.
     required:
       - species
       - build
@@ -52,6 +68,101 @@ properties:
     properties:
       vqsr:
         type: boolean
+      recal:
+        type: object
+        required:
+          - annotations
+          - resources
+          - truth_sensitivity
+        properties:
+          truth_sensitivity:
+            type: object
+            snvs:
+              type: number
+            indels:
+              type: number
+            required:
+              - snvs
+              - indels
+          annotations:
+            properties:
+              snvs:
+                type: array
+                items:
+                  type: string
+              indels:
+                type: array
+                items:
+                  type: string
+          required:
+            - snvs
+            - indels
+          resources:
+            type: object
+            properties:
+              hapmap:
+                type: object
+                properties:
+                  prior:
+                    type: number
+                  file:
+                    type: string
+                  required:
+                    - file
+              omni:
+                type: object
+                properties:
+                  prior:
+                    type: number
+                  file:
+                    type: string
+                  required:
+                    - file
+              g1k:
+                type: object
+                properties:
+                  prior:
+                    type: number
+                  file:
+                    type: string
+                  required:
+                    - file
+              dbsnp:
+                type: object
+                properties:
+                  prior:
+                    type: number
+                  file:
+                    type: string
+                  required:
+                    - file
+            type: object
+            properties:
+              mills:
+                type: object
+                properties:
+                  prior:
+                    type: number
+                  file:
+                    type: string
+                  required:
+                    - file
+              axiom:
+                type: object
+                properties:
+                  prior:
+                    type: number
+                  file:
+                    type: string
+                  required:
+                    - file
+            required:
+              - hapmap
+              - omni
+              - g1k
+              - dbsnp
+              - axiom
+              - mills
       hard:
         type: object
         properties:
@@ -91,7 +202,12 @@ properties:
           GenotypeGVCFs:
             type: string
           VariantRecalibrator:
-            type: string
+            type: object
+            properties:
+              snvs:
+                type: string
+              indels:
+                type: string
         required:
           - HaplotypeCaller
           - BaseRecalibrator
