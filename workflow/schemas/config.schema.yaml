@@ -68,8 +68,12 @@ properties:
     properties:
       vqsr:
         type: boolean
+        description:
+            Perform VQSR instead of hard filtering?
       recal:
         type: object
+        description:
+            Resources and parameters for VQSR.
         required:
           - annotations
           - resources
@@ -85,6 +89,9 @@ properties:
               - snvs
               - indels
           annotations:
+            description:
+                Arrays of annotations to add to -an argument of GATK
+                VariantRecalibrator for SNV and indel filtering respectively.
             properties:
               snvs:
                 type: array
@@ -99,6 +106,11 @@ properties:
             - indels
           resources:
             type: object
+            description:
+                Path to local copy of files for VQSR. Required if vqsr is true.
+                You may optionally specify values for priors to use during
+                variant recalibration instead of using the defaults as per the
+                GATK recommendations.
             properties:
               hapmap:
                 type: object
@@ -168,8 +180,12 @@ properties:
         properties:
           snvs:
             type: string
+            description:
+                JEXL expression for SNP filtering.
           indels:
             type: string
+            description:
+                JEXL expression for INDEL filtering.
         required:
           - snvs
           - indels
