@@ -67,15 +67,18 @@ rule gatk_varianteval:
     input:
         vcf="results/genotyped/all.vcf.gz",
         ref="resources/genome.fasta",
+        known=get_variation_vcf(),
     output:
         vcf="results/qc/varianteval.grp"
     log:
         "logs/gatk/varianteval.log"
     params:
-        extra="",
+        extra=get_variant_eval_extra(),
         java_opts="",
+    resources:
+        mem_gb=48
     wrapper:
-        "0.84.0/bio/gatk/varianteval"
+        "v0.85.1/bio/gatk/varianteval"
 
 
 rule multiqc:

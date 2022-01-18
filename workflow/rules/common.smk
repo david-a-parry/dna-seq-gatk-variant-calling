@@ -180,3 +180,12 @@ def get_vqsr_resources(vartype):
 def get_vqsr_sensitivity(wildcards):
     return "--truth-sensitivity-filter-level {}".format(
           config['filtering']['recal']['truth_sensitivity'][wildcards.vartype])
+
+
+def get_variant_eval_extra():
+    # TODO: args = "-EV MendelianViolationEvaluator -EV Family" if PED provided
+    args = ""
+    if config["processing"].get("restrict-regions"):
+        args += " --intervals {}".format(
+                config['processing']['restrict-regions'])
+    return args
