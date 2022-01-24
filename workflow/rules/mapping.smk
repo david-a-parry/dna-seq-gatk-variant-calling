@@ -20,10 +20,9 @@ rule trim_reads_pe:
         r2=temp("results/trimmed/{sample}-{unit}.2.fastq.gz"),
         r1_unpaired=temp("results/trimmed/{sample}-{unit}.1.unpaired.fastq.gz"),
         r2_unpaired=temp("results/trimmed/{sample}-{unit}.2.unpaired.fastq.gz"),
-        trimlog="results/trimmed/{sample}-{unit}.trimlog.txt",
     params:
         **config["params"]["trimmomatic"]["pe"],
-        extra=lambda w, output: "-trimlog {}".format(output.trimlog),
+        extra="",
     log:
         "logs/trimmomatic/{sample}-{unit}.log",
     wrapper:
