@@ -1,5 +1,17 @@
 ### _This is a fork of the workflow described below, modified to allow the user to specify their own reference genome and variant data._
 
+## Additions/Improvements
+
+* Implement VQSR correctly
+* Allow specification of non-Ensembl reference genome
+* Allow specification of non-Ensembl variant data
+* Adjust rules so that FASTQC actually runs
+* Avoid frequent segfaults in `compose_regions` rule when using a target file
+* Update wrapper versions
+* Add variant evaluation and mosdepth to QC rules
+* Add more inputs to MultiQC
+* Add SGE cluster configuration
+
 # Snakemake workflow: dna-seq-gatk-variant-calling
 
 [![DOI](https://zenodo.org/badge/139045164.svg)](https://zenodo.org/badge/latestdoi/139045164)
