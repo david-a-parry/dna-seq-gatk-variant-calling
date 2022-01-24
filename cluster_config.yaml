@@ -1,7 +1,7 @@
 __default__:
   runtime: 1440
   mem_gb: 12
-  tmpdir: /gpfs/igmmfs01/eddie/igmm_datastore_MND-WGS/mopd_wes_Dec2021/tmp
+  tmpdir: tmp
 
 #Below are intended to be interpreted by qsub-submit.py in cluster-qsub
 map_reads:
