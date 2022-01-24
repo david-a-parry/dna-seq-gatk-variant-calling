@@ -22,10 +22,10 @@ rule plot_stats:
         "results/tables/calls.tsv.gz",
     output:
         depths=report(
-            "results/plots/depths.svg", caption="../report/depths.rst", category="Plots"
+            "results/plots/depths.png", caption="../report/depths.rst", category="Plots"
         ),
         freqs=report(
-            "results/plots/allele-freqs.svg",
+            "results/plots/allele-freqs.png",
             caption="../report/freqs.rst",
             category="Plots",
         ),

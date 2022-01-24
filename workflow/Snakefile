@@ -8,8 +8,8 @@ rule all:
     input:
         "results/annotated/all.vcf.gz",
         "results/qc/multiqc.html",
-        "results/plots/depths.svg",
-        "results/plots/allele-freqs.svg",
+        "results/plots/depths.png",
+        "results/plots/allele-freqs.png",
 
 
 ##### Modules #####
