@@ -38,10 +38,15 @@ wildcard_constraints:
 
 ##### Helper functions #####
 
-# contigs in reference genome
+# contigs in reference genome/target regions
 def get_contigs():
     with checkpoints.genome_faidx.get().output[0].open() as fai:
-        return pd.read_table(fai, header=None, usecols=[0], squeeze=True, dtype=str)
+        if "restrict-regions" in config["processing"]:
+            bed = pd.read_csv(config["processing"]["restrict-regions"],
+                              sep='\t', usecols=[0], dtype=str, squeeze=True)
+            return bed.unique()
+        return pd.read_csv(fai, header=None, usecols=[0], squeeze=True,
+                           sep='\t', dtype=str)
 
 
 def get_fastq(wildcards):
