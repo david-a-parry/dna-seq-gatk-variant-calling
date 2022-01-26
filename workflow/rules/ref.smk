@@ -35,6 +35,7 @@ if config["ref"].get("fasta_local") is not None:
             if config["ref"]["fasta_local"].endswith(".gz"):
                 shell("cp -v {input} {params.genome_tmp} 2> {log}")
                 shell("gzip -dc {params.genome_tmp} > {output} 2>> {log}")
+                shell("rm {params.genome_tmp} 2>> {log}")
             else:
                 shell("cp -v {input} {output} 2> {log}")
 elif config["ref"].get("fasta_url") is not None:
@@ -54,6 +55,7 @@ elif config["ref"].get("fasta_url") is not None:
             if config["ref"]["fasta_url"].endswith(".gz"):
                 shell("mv -v {input} {params.genome_tmp} 2> {log}")
                 shell("gzip -dc {params.genome_tmp} > {output} 2>> {log}")
+                shell("rm {params.genome_tmp} 2>> {log}")
             else:
                 shell("mv -v {input} {output} 2> {log}")
 else:
