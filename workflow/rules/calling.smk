@@ -29,6 +29,9 @@ rule call_variants:
         "logs/gatk/haplotypecaller/{sample}.{contig}.log",
     params:
         extra=get_call_variants_params,
+        java_opts="",
+    resources:
+        mem_mb=4096
     wrapper:
         "0.84.0/bio/gatk/haplotypecaller"
 
@@ -51,10 +54,13 @@ rule genotype_variants:
     input:
         ref="resources/genome.fasta",
         gvcf="results/called/all.{contig}.g.vcf.gz",
+        known=get_variation_vcf(),
     output:
         vcf=temp("results/genotyped/all.{contig}.vcf.gz"),
     params:
         extra=config["params"]["gatk"]["GenotypeGVCFs"],
+    resources:
+        mem_mb=4096
     log:
         "logs/gatk/genotypegvcfs.{contig}.log",
     wrapper:
