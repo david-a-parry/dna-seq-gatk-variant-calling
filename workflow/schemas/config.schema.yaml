@@ -9,7 +9,12 @@ properties:
     type: string
   units:
     type: string
-
+  ped:
+    type: string
+    description:
+      Path to PED file indicating familial relationships and phenotype status.
+      If provided PED will be passed to genotyping commands and peddy will be
+      run as part of QC.
   ref:
     type: object
     properties:
@@ -239,7 +244,6 @@ properties:
     required:
       - gatk
       - picard
-
 required:
   - samples
   - units

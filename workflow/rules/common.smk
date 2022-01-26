@@ -111,6 +111,13 @@ def get_call_variants_params(wildcards, input):
     )
 
 
+def get_genotype_variants_params(wildcards):
+    args = config["params"]["gatk"]["GenotypeGVCFs"]
+    if config.get('ped'):
+        args += ' --pedigree {}'.format(config['ped'])
+    return args
+
+
 def get_recal_input(bai=False):
     # case 1: no duplicate removal
     f = "results/mapped/{sample}-{unit}.sorted.bam"
@@ -188,9 +195,32 @@ def get_vqsr_sensitivity(wildcards):
 
 
 def get_variant_eval_extra():
-    # TODO: args = "-EV MendelianViolationEvaluator -EV Family" if PED provided
     args = ""
     if config["processing"].get("restrict-regions"):
         args += " --intervals {}".format(
                 config['processing']['restrict-regions'])
+    if config.get('ped'):
+        args += ' --pedigree {}'.format(config['ped'])
+        args = "-EV MendelianViolationEvaluator -EV Family"
     return args
+
+
+def get_multiqc_input(wildcards):
+    inputs = expand(
+        "results/qc/samtools-stats/{u.sample}-{u.unit}.txt",
+        u=units.itertuples())
+    inputs.extend(
+            expand("results/qc/fastqc/{u.sample}-{u.unit}.zip",
+                u=units.itertuples()))
+    inputs.extend(
+            expand("results/qc/dedup/{u.sample}-{u.unit}.metrics.txt",
+                u=units.itertuples()))
+    inputs.extend(
+            expand(
+                "results/qc/mosdepth/{u.sample}.mosdepth.summary.txt",
+                u=units.itertuples()))
+    inputs.append("results/annotated/all.vcf.gz")
+    inputs.append("results/qc/varianteval.grp")
+    if config.get('ped') and config['ref']['species'].lower() == 'homo_sapiens':
+       inputs.append("results/qc/peddy/all.peddy.ped")
+    return inputs

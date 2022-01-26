@@ -58,7 +58,7 @@ rule genotype_variants:
     output:
         vcf=temp("results/genotyped/all.{contig}.vcf.gz"),
     params:
-        extra=config["params"]["gatk"]["GenotypeGVCFs"],
+        extra=get_genotype_variants_params,
     resources:
         mem_mb=4096
     log:
