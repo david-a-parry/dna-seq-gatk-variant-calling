@@ -24,3 +24,17 @@ rule annotate_variants:
     threads: 4
     wrapper:
         "0.84.0/bio/vep/annotate"
+
+
+rule tabix_annotated_variants:
+    input:
+        "results/annotated/all.vcf.gz",
+    output:
+        "results/annotated/all.vcf.gz.tbi",
+    log:
+        "logs/tabix/variation.log",
+    params:
+        "-p vcf",
+    cache: True
+    wrapper:
+        "0.84.0/bio/tabix"
