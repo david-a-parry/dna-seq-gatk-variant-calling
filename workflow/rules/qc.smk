@@ -65,7 +65,8 @@ else:
 
 rule gatk_varianteval:
     input:
-        vcf="results/genotyped/all.vcf.gz",
+        vcf="results/annotated/all.vcf.gz",
+        tbi="results/annotated/all.vcf.gz.tbi",
         ref="resources/genome.fasta",
         known=get_variation_vcf(),
     output:
@@ -76,27 +77,34 @@ rule gatk_varianteval:
         extra=get_variant_eval_extra(),
         java_opts="",
     resources:
-        mem_gb=48
+        mem_mb=8192
     wrapper:
         "v0.85.1/bio/gatk/varianteval"
 
 
+if config.get('ped') and config['ref']['species'].lower() == 'homo_sapiens':
+    rule peddy:
+        input:
+            vcf="results/genotyped/all.vcf.gz",
+            ped=config['ped']
+        output:
+            "results/qc/peddy/all.peddy.ped"
+        log:
+            "logs/qc/peddy.log"
+        params:
+            extra="--sites hg38" if config['ref']['build'].endswith('38') else ""
+        conda:
+            "../envs/peddy.yaml"
+        threads:
+            8
+        shell:
+            "python -m peddy {params.extra} -p {threads} --plot " +
+            "--prefix results/qc/peddy/all {input.vcf} {input.ped}"
+
+
 rule multiqc:
     input:
-        expand(
-            "results/qc/samtools-stats/{u.sample}-{u.unit}.txt",
-            u=units.itertuples()),
-        expand(
-            "results/qc/fastqc/{u.sample}-{u.unit}.zip",
-            u=units.itertuples()),
-        expand(
-            "results/qc/dedup/{u.sample}-{u.unit}.metrics.txt",
-            u=units.itertuples()),
-        expand(
-            "results/qc/mosdepth/{u.sample}.mosdepth.summary.txt",
-            u=units.itertuples()),
-        "results/annotated/all.vcf.gz",
-        "results/qc/varianteval.grp",
+        get_multiqc_input
     output:
         report(
             "results/qc/multiqc.html",
