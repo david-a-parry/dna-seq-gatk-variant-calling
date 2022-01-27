@@ -43,7 +43,8 @@ def get_contigs():
     with checkpoints.genome_faidx.get().output[0].open() as fai:
         if "restrict-regions" in config["processing"]:
             bed = pd.read_csv(config["processing"]["restrict-regions"],
-                              sep='\t', usecols=[0], dtype=str, squeeze=True)
+                              header=None, sep='\t', usecols=[0], dtype=str,
+                              squeeze=True)
             return bed.unique()
         return pd.read_csv(fai, header=None, usecols=[0], squeeze=True,
                            sep='\t', dtype=str)
@@ -195,13 +196,13 @@ def get_vqsr_sensitivity(wildcards):
 
 
 def get_variant_eval_extra():
-    args = ""
-    if config["processing"].get("restrict-regions"):
-        args += " --intervals {}".format(
+    args = ''
+    if config['processing'].get('restrict-regions'):
+        args += ' --intervals {}'.format(
                 config['processing']['restrict-regions'])
     if config.get('ped'):
         args += ' --pedigree {}'.format(config['ped'])
-        args = "-EV MendelianViolationEvaluator -EV Family"
+        args = ' -EV MendelianViolationEvaluator'
     return args
 
 
