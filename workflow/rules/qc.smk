@@ -24,16 +24,16 @@ rule samtools_stats:
 if config["processing"].get("restrict-regions"):
     rule mosdepth_bed:
         input:
-            bam=get_sample_bams,
+            bam="results/recal/{sample}-{unit}.bam",
             bed=config["processing"].get("restrict-regions", ""),
         output:
-            "results/qc/mosdepth/{sample}.mosdepth.global.dist.txt",
-            "results/qc/mosdepth/{sample}.mosdepth.region.dist.txt",
-            "results/qc/mosdepth/{sample}.regions.bed.gz",
-            "results/qc/mosdepth/{sample}.thresholds.bed.gz",
-            summary="results/qc/mosdepth/{sample}.mosdepth.summary.txt",
+            "results/qc/mosdepth/{sample}-{unit}.mosdepth.global.dist.txt",
+            "results/qc/mosdepth/{sample}-{unit}.mosdepth.region.dist.txt",
+            "results/qc/mosdepth/{sample}-{unit}.regions.bed.gz",
+            "results/qc/mosdepth/{sample}-{unit}.thresholds.bed.gz",
+            summary="results/qc/mosdepth/{sample}-{unit}.mosdepth.summary.txt",
         log:
-            "logs/mosdepth_by/{sample}.log",
+            "logs/mosdepth_by/{sample}-{unit}.log",
         params:
             thresholds="1,5,10,20,30",
             extra="--fast-mode --no-per-base --mapq 20",
@@ -44,15 +44,15 @@ if config["processing"].get("restrict-regions"):
 else:
     rule mosdepth_global:
         input:
-            bam=get_sample_bams,
+            bam="results/recal/{sample}-{unit}.bam",
         output:
-            "results/qc/mosdepth/{sample}.mosdepth.global.dist.txt",
-            "results/qc/mosdepth/{sample}.mosdepth.region.dist.txt",
-            "results/qc/mosdepth/{sample}.regions.bed.gz",
-            "results/qc/mosdepth/{sample}.thresholds.bed.gz",
-            summary="results/qc/mosdepth/{sample}.mosdepth.summary.txt",
+            "results/qc/mosdepth/{sample}-{unit}.mosdepth.global.dist.txt",
+            "results/qc/mosdepth/{sample}-{unit}.mosdepth.region.dist.txt",
+            "results/qc/mosdepth/{sample}-{unit}.regions.bed.gz",
+            "results/qc/mosdepth/{sample}-{unit}.thresholds.bed.gz",
+            summary="results/qc/mosdepth/{sample}-{unit}.mosdepth.summary.txt",
         log:
-            "logs/mosdepth_by/{sample}.log",
+            "logs/mosdepth_by/{sample}-{unit}.log",
         params:
             by=500,
             thresholds="1,5,10,20,30",
