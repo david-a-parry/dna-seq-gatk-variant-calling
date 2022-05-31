@@ -60,7 +60,7 @@ else:
         threads:
             4
         wrapper:
-            "v0.84.0/bio/mosdepth"
+            "v0.85.1/bio/mosdepth"
 
 
 rule gatk_varianteval:
