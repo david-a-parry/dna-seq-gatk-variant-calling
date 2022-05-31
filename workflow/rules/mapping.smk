@@ -6,6 +6,8 @@ rule trim_reads_se:
     params:
         **config["params"]["trimmomatic"]["se"],
         extra="",
+    resources:
+        mem_mb=8096,
     log:
         "logs/trimmomatic/{sample}-{unit}.log",
     wrapper:
@@ -23,6 +25,8 @@ rule trim_reads_pe:
     params:
         **config["params"]["trimmomatic"]["pe"],
         extra="",
+    resources:
+        mem_mb=8096,
     log:
         "logs/trimmomatic/{sample}-{unit}.log",
     wrapper:
