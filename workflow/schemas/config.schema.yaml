@@ -57,6 +57,12 @@ properties:
             If provided species/build/release/variation_url will be ignored and
             this variant file will be used instead.
         type: string
+      add_chr:
+        type: boolean
+        description:
+            If true, add chr prefix to variation VCF after downloading. Only
+            applicable to VCF from variation_url, VCF from variation_local will
+            be unchanged.
       fix_non_iupac:
         type: boolean
         description:

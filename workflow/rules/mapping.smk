@@ -6,6 +6,8 @@ rule trim_reads_se:
     params:
         **config["params"]["trimmomatic"]["se"],
         extra="",
+    resources:
+        mem_mb=8096,
     log:
         "logs/trimmomatic/{sample}-{unit}.log",
     wrapper:
@@ -23,6 +25,8 @@ rule trim_reads_pe:
     params:
         **config["params"]["trimmomatic"]["pe"],
         extra="",
+    resources:
+        mem_mb=8096,
     log:
         "logs/trimmomatic/{sample}-{unit}.log",
     wrapper:
@@ -44,7 +48,7 @@ rule map_reads:
         sort_order="coordinate",
     threads: 8
     wrapper:
-        "0.84.0/bio/bwa/mem"
+        "v1.5.0/bio/bwa/mem"
 
 
 rule mark_duplicates:

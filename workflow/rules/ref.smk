@@ -1,6 +1,13 @@
 from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 
 
+
+def get_remote_var_output():
+    if config["ref"].get("add_chr"):
+        return "resources/variation_no_chr.vcf.gz"
+    return "resources/variation.vcf.gz"
+
+
 def local_or_urls_present():
     if config["ref"].get("fasta_url") is None:
         if config["ref"].get("fasta_local") is None:
@@ -120,12 +127,25 @@ elif config["ref"].get("variation_url") is not None:
             vcf=HTTP.remote(config["ref"]["variation_url"]),
             fai="resources/genome.fasta.fai",
         output:
-            "resources/variation.vcf.gz"
+            get_remote_var_output(),
         log:
             "logs/get-known-variants.log",
-        cache: True
         shell:
             "mv -v {input.vcf} {output} 2> {log}"
+    if config["ref"].get("add_chr"):
+        rule add_chr_to_remote_var:
+            input:
+                get_remote_var_output(),
+            output:
+                "resources/variation.vcf.gz",
+            log:
+                "logs/add-chr-to-known-variants.log",
+            conda:
+                "../envs/samtools.yaml"
+            shell:
+                "(gzip -dc {input} | " +
+                "perl -wne 'if (/^#/){{ print }} else {{ print \"chr$_\" }}'"+
+                " | bgzip -c > {output} ) 2> {log}"
 else:
     rule get_known_variation_ensembl:
         input:
@@ -178,14 +198,14 @@ rule bwa_index:
     input:
         "resources/genome.fasta",
     output:
-        multiext("resources/genome.fasta", ".amb", ".ann", ".bwt", ".pac", ".sa"),
+        idx=multiext("resources/genome.fasta", ".amb", ".ann", ".bwt", ".pac", ".sa"),
     log:
         "logs/bwa_index.log",
     resources:
         mem_mb=369000,
     cache: True
     wrapper:
-        "0.84.0/bio/bwa/index"
+        "v1.5.0/bio/bwa/index"
 
 
 rule get_vep_cache:
