@@ -218,7 +218,7 @@ def get_multiqc_input(wildcards):
                 u=units.itertuples()))
     inputs.extend(
             expand(
-                "results/qc/mosdepth/{u.sample}.mosdepth.summary.txt",
+                "results/qc/mosdepth/{u.sample}-{u.unit}.mosdepth.summary.txt",
                 u=units.itertuples()))
     inputs.append("results/annotated/all.vcf.gz")
     inputs.append("results/qc/varianteval.grp")
