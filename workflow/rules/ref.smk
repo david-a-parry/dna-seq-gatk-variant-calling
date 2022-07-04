@@ -168,7 +168,6 @@ else:
 rule remove_iupac_codes:
     input:
         "resources/variation.vcf.gz",
-        "resources/variation.vcf.gz.tbi",
     output:
         "resources/variation.noiupac.vcf.gz",
     log:
